@@ -1,0 +1,14 @@
+[project]
+name = "tmc-users"
+version = "0.1.0"
+description = "TMC User CRD app"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.116.1",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+]

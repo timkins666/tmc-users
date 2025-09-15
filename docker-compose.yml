@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:17.5
+    environment:
+      POSTGRES_DB: tmc
+      POSTGRES_PASSWORD: postgres
+    user: postgres
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready, -U, postgres]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+  backend:
+    image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+    build:
+      context: ./backend
+
+  app:
+    container_name: frontend
+    build:
+      context: ./app
+    ports:
+    - 5173:5173
+    volumes:
+    - ./app:/app
+    - /app/node_modules
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: true
+    command: npm run dev -- --host
+
+volumes:
+  postgres_data:
