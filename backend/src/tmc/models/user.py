@@ -2,6 +2,7 @@
 
 from datetime import datetime, date
 import uuid
+from pydantic import computed_field
 from sqlmodel import Field, SQLModel
 
 
@@ -13,8 +14,12 @@ class UserBase(SQLModel):
     date_of_birth: date
 
 
-class UserCreate(UserBase):
+class UserCreate(
+    UserBase,
+):
     """fields required to create a new user"""
+
+    model_config = {"extra": "forbid"}
 
 
 class UserPublic(UserBase):
@@ -22,7 +27,7 @@ class UserPublic(UserBase):
 
     id: uuid.UUID
 
-    @property
+    @computed_field(return_type=int)
     def age(self):
         """returns user's age at current date using system time"""
         return (date.today() - self.date_of_birth).days // 365
