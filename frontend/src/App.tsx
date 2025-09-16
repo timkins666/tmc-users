@@ -1,34 +1,74 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Container, Typography, Button } from '@mui/material'
+import { Add } from '@mui/icons-material'
+import { type User } from './types/user'
+import { useUsers } from './hooks/useUsers'
+import { UserTable, type SortField, type SortOrder } from './components/UserTable'
+import { CreateUserDialog } from './components/CreateUserDialog'
+import { DeleteUserDialog } from './components/DeleteUserDialog'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { users, createUser, deleteUser } = useUsers()
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [sortField, setSortField] = useState<SortField>('firstname')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+
+  const handleSort = (field: SortField) => {
+    const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc'
+    setSortField(field)
+    setSortOrder(newOrder)
+  }
+
+  const sortedUsers = [...users].sort((a, b) => {
+    const aVal = a[sortField]
+    const bVal = b[sortField]
+    const modifier = sortOrder === 'asc' ? 1 : -1
+    return aVal < bVal ? -modifier : aVal > bVal ? modifier : 0
+  })
+
+  const handleDeleteConfirm = () => {
+    if (userToDelete) {
+      deleteUser(userToDelete.id)
+      setUserToDelete(null)
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        User Management
+      </Typography>
+
+      <Button
+        variant="contained"
+        startIcon={<Add />}
+        onClick={() => setShowCreateModal(true)}
+        sx={{ mb: 3 }}
+      >
+        Create New User
+      </Button>
+
+      <UserTable
+        users={sortedUsers}
+        onDeleteUser={setUserToDelete}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+      />
+
+      <CreateUserDialog
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreateUser={createUser}
+      />
+
+      <DeleteUserDialog
+        user={userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+      />
+    </Container>
   )
 }
 
