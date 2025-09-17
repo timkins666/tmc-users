@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import type { User, UserBase } from '../types/user';
+import type { NewUser, User } from '../types/user';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -9,17 +9,33 @@ export const userService = {
     const users: User[] = await response.json();
     return users.map((user: User) => ({
       ...user,
-      date_of_birth: dayjs(user.date_of_birth),
+      dateOfBirth: dayjs(user.dateOfBirth),
+      age: dayjs().diff(user.dateOfBirth, 'day'),
     }));
   },
 
-  async createUser(userData: UserBase): Promise<User> {
+  async createUser(userData: NewUser): Promise<User | null> {
     const response = await fetch(`${API_BASE}/users/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user: userData }),
+      body: JSON.stringify({
+        user: {
+          ...userData,
+          dateOfBirth: userData.dateOfBirth?.format('YYYY-MM-DD'),
+        },
+      }),
     });
-    return response.json();
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const newUser: User = await response.json();
+    return {
+      ...newUser,
+      dateOfBirth: dayjs(newUser.dateOfBirth),
+      age: dayjs().diff(userData.dateOfBirth, 'day'),
+    };
   },
 
   async deleteUser(id: string): Promise<void> {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { User, UserBase } from '../types/user';
+import type { NewUser, User } from '../types/user';
 import { userService } from '../services/userService';
 
 export const useUsers = () => {
@@ -14,19 +14,26 @@ export const useUsers = () => {
     }
   };
 
-  const createUser = async (userData: UserBase) => {
+  const createUser = async (userData: NewUser): Promise<boolean> => {
     try {
-      await userService.createUser(userData);
-      fetchUsers();
+      const newUser = await userService.createUser(userData);
+
+      if (!newUser) {
+        return false;
+      }
+
+      setUsers((prevUsers) => [...prevUsers, newUser]);
+      return true;
     } catch (error) {
       console.error('Error creating user:', error);
+      return false;
     }
   };
 
   const deleteUser = async (id: string) => {
     try {
       await userService.deleteUser(id);
-      fetchUsers();
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
     } catch (error) {
       console.error('Error deleting user:', error);
     }

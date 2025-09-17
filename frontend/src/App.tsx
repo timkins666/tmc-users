@@ -15,7 +15,7 @@ function App() {
   const { users, createUser, deleteUser } = useUsers();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [sortField, setSortField] = useState<SortField>('firstname');
+  const [sortField, setSortField] = useState<SortField>('lastname');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const handleSort = (field: SortField) => {
@@ -25,10 +25,10 @@ function App() {
     setSortOrder(newOrder);
   };
 
-  const sortedUsers = [...users].sort((a, b) => {
+  const sortedUsers = users.sort((a, b) => {
     const aVal = a[sortField];
     const bVal = b[sortField];
-    const modifier = sortOrder === 'asc' ? 1 : -1;
+    let modifier = sortOrder === 'asc' ? 1 : -1;
     return aVal < bVal ? -modifier : aVal > bVal ? modifier : 0;
   });
 

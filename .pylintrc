@@ -2,3 +2,11 @@
 init-hook=
     import sys
     sys.path.append("./backend/src")
+
+[MAIN]
+source-roots=backend
+
+[MESSAGES CONTROL]
+disable=
+    too-few-public-methods,
+    wrong-import-order

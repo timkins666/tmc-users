@@ -9,8 +9,9 @@ import {
   IconButton,
   TableSortLabel,
 } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Cake, Delete } from '@mui/icons-material';
 import { type User } from '../types/user';
+import dayjs from 'dayjs';
 
 export type SortField = keyof User;
 export type SortOrder = 'asc' | 'desc';
@@ -31,7 +32,7 @@ export const UserTable = ({
   onSort,
 }: UserTableProps) => {
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ mt: 2, mb: 2, maxHeight: 'calc(100vh - 350px)' }}>
       <Table>
         <TableHead>
           <TableRow>
@@ -55,9 +56,9 @@ export const UserTable = ({
             </TableCell>
             <TableCell>
               <TableSortLabel
-                active={sortField === 'date_of_birth'}
-                direction={sortField === 'date_of_birth' ? sortOrder : 'asc'}
-                onClick={() => onSort('date_of_birth')}
+                active={sortField === 'dateOfBirth'}
+                direction={sortField === 'dateOfBirth' ? sortOrder : 'asc'}
+                onClick={() => onSort('dateOfBirth')}
               >
                 Date of Birth
               </TableSortLabel>
@@ -76,13 +77,28 @@ export const UserTable = ({
         </TableHead>
         <TableBody>
           {users.map((user) => (
-            <TableRow key={user.id} hover>
+            <TableRow
+              key={user.id}
+              hover
+              sx={{
+                '& .delete-icon': { opacity: 0 },
+                '&:hover .delete-icon': { opacity: 1 }
+              }}
+            >
               <TableCell>{user.firstname}</TableCell>
               <TableCell>{user.lastname}</TableCell>
-              <TableCell>{user.date_of_birth.format('DD/MM/YYYY')}</TableCell>
-              <TableCell>{user.age}</TableCell>
+              <TableCell>{user.dateOfBirth.format('DD/MM/YYYY')}</TableCell>
+              <TableCell>
+                {dayjs().diff(user.dateOfBirth, 'year')}{' '}
+                {user.dateOfBirth.date() === dayjs().date() &&
+                user.dateOfBirth.month() === dayjs().month()
+                  ? <Cake sx={{ color: 'primary.main', verticalAlign:'sub' }}  />
+                  : ''
+                }
+              </TableCell>
               <TableCell>
                 <IconButton
+                  className="delete-icon"
                   onClick={() => onDeleteUser(user)}
                   sx={{ '&:hover': { color: 'error.main' } }}
                 >

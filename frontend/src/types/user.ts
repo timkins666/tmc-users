@@ -1,4 +1,5 @@
-import type { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
+import { MIN_USER_AGE } from './constants';
 
 export interface UserBase {
   firstname: string;
@@ -6,11 +7,21 @@ export interface UserBase {
 }
 
 export interface NewUser extends UserBase {
-  date_of_birth: Dayjs | null;
+  dateOfBirth: Dayjs | null;
 }
 
 export interface User extends UserBase {
   id: string;
-  date_of_birth: Dayjs;
+  dateOfBirth: Dayjs;
   age: number;
 }
+
+export const validateNewUser = (userData: NewUser) : boolean => {
+    if (!userData.firstname || !userData.lastname) {
+    return false;
+  }
+  if (!userData.dateOfBirth || dayjs().diff(userData.dateOfBirth, 'year') < MIN_USER_AGE) {
+    return false;
+  }
+  return true;
+};

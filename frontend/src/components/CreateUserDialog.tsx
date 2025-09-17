@@ -8,14 +8,16 @@ import {
   Button,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { type NewUser, type UserBase } from '../types/user';
+import { type NewUser, validateNewUser } from '../types/user';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import { MIN_USER_AGE } from '../types/constants';
 
 interface CreateUserDialogProps {
   open: boolean;
   onClose: () => void;
-  onCreateUser: (userData: UserBase) => void;
+  onCreateUser: (userData: NewUser) => Promise<boolean>;
 }
 
 export const CreateUserDialog = ({
@@ -26,15 +28,22 @@ export const CreateUserDialog = ({
   const [formData, setFormData] = useState<NewUser>({
     firstname: '',
     lastname: '',
-    date_of_birth: null,
+    dateOfBirth: null,
   });
 
   const [dateError, setDateError] = useState<string | null>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateUser(formData);
-    setFormData({ firstname: '', lastname: '', date_of_birth: null });
+
+    if (!validateNewUser(formData)) {
+      return;
+    }
+
+    if (!await onCreateUser(formData)) {
+      return; // invalid or failed request
+    }
+    setFormData({ firstname: '', lastname: '', dateOfBirth: null });
     onClose();
   };
 
@@ -70,14 +79,14 @@ export const CreateUserDialog = ({
               sx={{ width: '100%' }}
               label='Date of birth'
               format='DD/MM/YYYY'
-              value={formData.date_of_birth}
-              disableFuture
+              value={formData.dateOfBirth}
+              maxDate={dayjs().subtract(MIN_USER_AGE, 'year')}
               onChange={(newValue) =>
-                setFormData({ ...formData, date_of_birth: newValue })
+                setFormData({ ...formData, dateOfBirth: newValue })
               }
               onError={(newError) =>
                 setDateError(
-                  newError === 'disableFuture' ? 'Future dates not allowed' : ''
+                  newError === 'maxDate' ? `Users must be over ${MIN_USER_AGE}` : ''
                 )
               }
               slotProps={{

@@ -1,26 +1,34 @@
 """tests for routers/users.py module"""
 
+from datetime import date, timedelta
 import json
 import uuid
 from fastapi.testclient import TestClient
 from fastapi import status
+import pytest
 from sqlmodel import Session, select
 
+from test.conftest import create_user
 from tmc.models.user import User
 
-NUM_PUBLIC_USER_KEYS = 4
+public_user_keys = [
+    "id",
+    "firstname",
+    "lastname",
+    "dateOfBirth",
+]
 
 
 class TestUsersRouter:
     """test user handlers"""
 
-    def new_user_data(self):
-        """get valid new user data"""
+    def new_user_data(self, **kwargs):
+        """valid new user request data"""
         return {
             "firstname": "Test",
             "lastname": "uSEr",
-            "date_of_birth": "2001-02-03",
-        }
+            "dateOfBirth": "2001-02-03",
+        } | kwargs
 
     def test_get_all_users_none_created(self, app: TestClient):
         """test get all users when none exist"""
@@ -33,20 +41,24 @@ class TestUsersRouter:
         num_users = 3
 
         for i in range(num_users):
-            app.post(
-                "/users/create",
-                json={"user": {**self.new_user_data(), "firstname": f"user{i}"}},
+            create_user(
+                User(
+                    firstname=f"user{i}",
+                    lastname="ln",
+                    date_of_birth=date(2000 + i, 2, 3),
+                    deleted=i == 1,
+                )
             )
 
         response = app.get("/users")
 
         users = json.loads(response.text)
-        assert len(users) == num_users
-        assert [u["firstname"] for u in users] == ["user0", "user1", "user2"]
+        assert [u["firstname"] for u in users] == ["user0", "user2"]
+        assert [u["dateOfBirth"][0:4] for u in users] == ["2000", "2002"]
 
         for user in users:
             # check only contains above expected keys
-            assert len(user) == NUM_PUBLIC_USER_KEYS
+            assert list(user) == public_user_keys
 
     def test_create_user_success(self, app: TestClient):
         """test create a user"""
@@ -58,11 +70,28 @@ class TestUsersRouter:
         new_user = json.loads(response.text)
         assert new_user["firstname"] == "Test"
         assert new_user["lastname"] == "uSEr"
-        assert new_user["date_of_birth"] == "2001-02-03"
+        assert new_user["dateOfBirth"] == "2001-02-03"
         assert uuid.UUID(new_user["id"]).version == 4
 
-        # check only contains above expected keys
-        assert len(new_user) == NUM_PUBLIC_USER_KEYS
+        assert list(new_user) == public_user_keys
+
+    @pytest.mark.parametrize(
+        "dob",
+        [
+            pytest.param("1850-02-03", id="too old"),
+            pytest.param(
+                (date.today() - timedelta(weeks=520)).isoformat(), id="too young"
+            ),
+        ],
+    )
+    def test_create_user_bad_dob(self, app: TestClient, dob: str):
+        """test creating a user with invalid date of birth"""
+
+        response = app.post(
+            "/users/create", json={"user": self.new_user_data(dateOfBirth=dob)}
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     def test_create_user_fail_if_id_in_request(self, app: TestClient):
         """test create a user"""
@@ -82,27 +111,27 @@ class TestUsersRouter:
     def test_delete_user(self, app: TestClient, session: Session):
         """test delete a user"""
 
-        create_response = app.post("/users/create", json={"user": self.new_user_data()})
+        user = create_user(User(**self.new_user_data()))
 
-        assert create_response.status_code == 200
         assert len(session.exec(select(User)).all()) == 1
+        assert session.exec(select(User)).one().deleted is False
 
-        new_user_id = json.loads(create_response.text)["id"]
-
-        delete_response = app.delete(f"/user/{new_user_id}")
+        delete_response = app.delete(f"/user/{user.id}")
 
         assert delete_response.status_code == status.HTTP_204_NO_CONTENT
-        assert not session.exec(select(User)).all()
+
+        assert len(session.exec(select(User)).all()) == 1
+        assert session.exec(select(User)).one().deleted is True
 
     def test_delete_user_invalid_id_format(self, app: TestClient):
-        """test delete a user"""
+        """test deleting a user with invaild id format"""
 
         response = app.delete("/user/123")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     def test_delete_user_unknown_id(self, app: TestClient):
-        """test delete a user"""
+        """test delete a non-existent user"""
 
         response = app.delete(f"/user/{uuid.uuid4()}")
 

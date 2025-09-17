@@ -26,3 +26,12 @@ def pre_cleanup(session: Session):
     """delete any users in the db before each test"""
     session.exec(delete(User))
     session.commit()
+
+
+def create_user(user: User):
+    """create a user in the db"""
+    session = next(get_session())
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user

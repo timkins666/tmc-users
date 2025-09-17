@@ -1,5 +1,7 @@
+import MockDate from 'mockdate';
 import dayjs from 'dayjs';
 import { userService } from '../../services/userService';
+import type { NewUser } from '../../types/user';
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -7,16 +9,19 @@ global.fetch = jest.fn();
 describe('userService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    MockDate.reset();
   });
 
   test('getUsers fetches users from API', async () => {
+    MockDate.set('2022-01-01');
+
     const mockUsers = [
       {
         id: '1',
         firstname: 'John',
         lastname: 'Doe',
-        date_of_birth: '1990-01-01',
-        age: 34,
+        dateOfBirth: '1990-01-01',
+        age: 365.25 * 32,
       },
     ];
 
@@ -28,19 +33,22 @@ describe('userService', () => {
 
     expect(fetch).toHaveBeenCalledWith('http://localhost:8000/users');
     expect(result).toEqual([
-      { ...mockUsers[0], date_of_birth: dayjs('1990-01-01') },
+      { ...mockUsers[0], dateOfBirth: dayjs('1990-01-01') },
     ]);
   });
 
   test('createUser posts user data to API', async () => {
-    const userData = {
+    MockDate.set('1991-01-01');
+
+    const userData: NewUser = {
       firstname: 'John',
       lastname: 'Doe',
-      date_of_birth: '1990-01-01',
+      dateOfBirth: dayjs('1990-01-01'),
     };
-    const mockResponse = { id: '1', ...userData, age: 34 };
+    const mockResponse = { ...userData, id: '1' };
     (fetch as jest.Mock).mockResolvedValueOnce({
       json: () => Promise.resolve(mockResponse),
+      ok: true,
     });
 
     const result = await userService.createUser(userData);
@@ -48,9 +56,24 @@ describe('userService', () => {
     expect(fetch).toHaveBeenCalledWith('http://localhost:8000/users/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user: userData }),
+      body: JSON.stringify({ user: {...userData, dateOfBirth: '1990-01-01' }}),
     });
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual({...mockResponse, age: 365});
+  });
+
+  test('createUser returns null for failed request', async () => {
+    const userData: NewUser = {
+      firstname: 'John',
+      lastname: 'Doe',
+      dateOfBirth: dayjs('1990-01-01'),
+    };
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+    });
+
+    const result = await userService.createUser(userData);
+
+    expect(result).toBe(null);
   });
 
   test('deleteUser sends DELETE request', async () => {

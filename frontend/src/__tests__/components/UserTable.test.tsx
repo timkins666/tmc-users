@@ -8,14 +8,14 @@ const mockUsers: User[] = [
     id: '1',
     firstname: 'John',
     lastname: 'Doe',
-    date_of_birth: dayjs('1990-01-01'),
+    dateOfBirth: dayjs('1990-01-01'),
     age: 34,
   },
   {
     id: '2',
     firstname: 'Jane',
     lastname: 'Smith',
-    date_of_birth: dayjs('1985-05-15'),
+    dateOfBirth: dayjs('1985-05-15'),
     age: 39,
   },
 ];

@@ -28,6 +28,8 @@ engine = create_engine(db_url())
 def init_db() -> None:
     """initialize database with configured tables"""
     _logger.info("initialising database and tables")
+    if os.getenv("REFRESH_DB") == "true":
+        SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
 
 

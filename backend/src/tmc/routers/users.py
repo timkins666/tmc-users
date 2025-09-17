@@ -17,13 +17,19 @@ router = APIRouter()
     summary="Return all users from the database",
 )
 async def get_all_users(session: SessionDep):
-    """get all users"""
-    return session.exec(select(User)).all()
+    """get all non-deleted users"""
+    # pylint: disable=singleton-comparison
+    return session.exec(select(User).where(User.deleted == False)).all()
 
 
-@router.post("/users/create", response_model=UserPublic, summary="Create a new user")
+@router.post(
+    "/users/create",
+    response_model=UserPublic,
+    summary="Create a new user",
+)
 async def create_user(
-    user: Annotated[UserCreate, Body(embed=True)], session: SessionDep
+    user: Annotated[UserCreate, Body(embed=True)],
+    session: SessionDep,
 ):
     """
     Create a user
@@ -44,13 +50,14 @@ async def delete_user(
     user_id: Annotated[uuid.UUID, Path(title="The ID of the user to delete")],
     session: SessionDep,
 ):
-    """deletes a user"""
+    """soft deletes a user"""
     statement = select(User).where(User.id == user_id)
     results = session.exec(statement)
     user = results.first()
 
     if not user:
+        # probably deleted by someone else but would add logging
         return
 
-    session.delete(user)
+    user.deleted = True
     session.commit()

@@ -36,7 +36,7 @@ describe('CreateUserDialog', () => {
       expect(mockProps.onCreateUser).toHaveBeenCalledWith({
         firstname: 'John',
         lastname: 'Doe',
-        date_of_birth: dayjs('1993-02-01'),
+        dateOfBirth: dayjs('1993-02-01'),
       });
     });
   });

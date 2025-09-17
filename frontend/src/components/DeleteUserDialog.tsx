@@ -1,11 +1,11 @@
 import {
+  Box,
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Typography,
-  Button,
-  Box,
 } from '@mui/material';
 import { type User } from '../types/user';
 
@@ -24,13 +24,13 @@ export const DeleteUserDialog = ({
     <Dialog open={!!user} onClose={onClose}>
       <DialogTitle>Confirm delete</DialogTitle>
       <DialogContent>
-        <Typography>
+        <Typography sx={{ display: 'inline' }}>
           Are you sure you want to delete{' '}
-          <Box sx={{ fontWeight: 'bold' }} display='inline'>
-            {user?.firstname} {user?.lastname}
-          </Box>
-          ?
         </Typography>
+        <Box sx={{ fontWeight: 'bold' }} display='inline'>
+          {user?.firstname} {user?.lastname}
+        </Box>
+        <Typography sx={{ display: 'inline' }}>?</Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
