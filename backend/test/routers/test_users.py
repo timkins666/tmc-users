@@ -11,12 +11,12 @@ from sqlmodel import Session, select
 from test.conftest import create_user
 from tmc.models.user import User
 
-public_user_keys = [
+public_user_keys = {
     "id",
     "firstname",
     "lastname",
     "dateOfBirth",
-]
+}
 
 
 class TestUsersRouter:
@@ -35,7 +35,7 @@ class TestUsersRouter:
         response = app.get("/users")
         assert response.text == "[]"
 
-    def test_get_all_users(self, app: TestClient):
+    def test_get_all_users(self, app: TestClient, session: Session):
         """test get all users"""
 
         num_users = 3
@@ -47,7 +47,8 @@ class TestUsersRouter:
                     lastname="ln",
                     date_of_birth=date(2000 + i, 2, 3),
                     deleted=i == 1,
-                )
+                ),
+                session,
             )
 
         response = app.get("/users")
@@ -58,7 +59,7 @@ class TestUsersRouter:
 
         for user in users:
             # check only contains above expected keys
-            assert list(user) == public_user_keys
+            assert set(user) == public_user_keys
 
     def test_create_user_success(self, app: TestClient):
         """test create a user"""
@@ -73,7 +74,7 @@ class TestUsersRouter:
         assert new_user["dateOfBirth"] == "2001-02-03"
         assert uuid.UUID(new_user["id"]).version == 4
 
-        assert list(new_user) == public_user_keys
+        assert set(new_user) == public_user_keys
 
     @pytest.mark.parametrize(
         "dob",
@@ -111,7 +112,10 @@ class TestUsersRouter:
     def test_delete_user(self, app: TestClient, session: Session):
         """test delete a user"""
 
-        user = create_user(User(**self.new_user_data()))
+        # sqlite needs python date object
+        user = create_user(
+            User(**self.new_user_data(dateOfBirth=date(2000, 2, 3))), session
+        )
 
         assert len(session.exec(select(User)).all()) == 1
         assert session.exec(select(User)).one().deleted is False
