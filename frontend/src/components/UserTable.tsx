@@ -8,6 +8,7 @@ import {
   Paper,
   IconButton,
   TableSortLabel,
+  Typography,
 } from '@mui/material';
 import { Cake, Delete } from '@mui/icons-material';
 import { type User } from '../types/user';
@@ -22,6 +23,7 @@ interface UserTableProps {
   sortField: SortField;
   sortOrder: SortOrder;
   onSort: (field: SortField) => void;
+  searchText: string;
 }
 
 export const UserTable = ({
@@ -30,9 +32,13 @@ export const UserTable = ({
   sortField,
   sortOrder,
   onSort,
+  searchText,
 }: UserTableProps) => {
   return (
-    <TableContainer component={Paper} sx={{ mt: 2, mb: 2, maxHeight: 'calc(100vh - 350px)' }}>
+    <TableContainer
+      component={Paper}
+      sx={{ mt: 2, mb: 2, maxHeight: 'calc(100vh - 350px)' }}
+    >
       <Table>
         <TableHead>
           <TableRow>
@@ -76,37 +82,46 @@ export const UserTable = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map((user) => (
-            <TableRow
-              key={user.id}
-              hover
-              sx={{
-                '& .delete-icon': { opacity: 0 },
-                '&:hover .delete-icon': { opacity: 1 }
-              }}
-            >
-              <TableCell>{user.firstname}</TableCell>
-              <TableCell>{user.lastname}</TableCell>
-              <TableCell>{user.dateOfBirth.format('DD/MM/YYYY')}</TableCell>
-              <TableCell>
-                {dayjs().diff(user.dateOfBirth, 'year')}{' '}
-                {user.dateOfBirth.date() === dayjs().date() &&
-                user.dateOfBirth.month() === dayjs().month()
-                  ? <Cake sx={{ color: 'primary.main', verticalAlign:'sub' }}  />
-                  : ''
-                }
-              </TableCell>
-              <TableCell>
-                <IconButton
-                  className="delete-icon"
-                  onClick={() => onDeleteUser(user)}
-                  sx={{ '&:hover': { color: 'error.main' } }}
-                >
-                  <Delete />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
+          {users
+            .filter(
+              (user) =>
+                user.firstname.toLowerCase().includes(searchText) ||
+                user.lastname.toLowerCase().includes(searchText)
+            )
+            .map((user) => (
+              <TableRow
+                key={user.id}
+                hover
+                sx={{
+                  '& .delete-icon': { opacity: 0 },
+                  '&:hover .delete-icon': { opacity: 1 },
+                }}
+              >
+                <TableCell>{user.firstname}</TableCell>
+                <TableCell>{user.lastname}</TableCell>
+                <TableCell>{user.dateOfBirth.format('DD/MM/YYYY')}</TableCell>
+                <TableCell>
+                  {dayjs().diff(user.dateOfBirth, 'year')}{' '}
+                  {user.dateOfBirth.date() === dayjs().date() &&
+                  user.dateOfBirth.month() === dayjs().month() ? (
+                    <Cake
+                      sx={{ color: 'primary.main', verticalAlign: 'sub' }}
+                    />
+                  ) : (
+                    ''
+                  )}
+                </TableCell>
+                <TableCell>
+                  <IconButton
+                    className='delete-icon'
+                    onClick={() => onDeleteUser(user)}
+                    sx={{ '&:hover': { color: 'error.main' } }}
+                  >
+                    <Delete />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>

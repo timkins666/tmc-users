@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import { Container, Typography, Button } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import {
+  Container,
+  Typography,
+  Button,
+  OutlinedInput,
+  InputAdornment,
+} from '@mui/material';
+import { Add, PersonSearch } from '@mui/icons-material';
 import { type User } from './types/user';
 import { useUsers } from './hooks/useUsers';
 import {
@@ -17,6 +23,7 @@ function App() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [sortField, setSortField] = useState<SortField>('lastname');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [searchText, setSearchText] = useState<string>('');
 
   const handleSort = (field: SortField) => {
     const newOrder =
@@ -41,18 +48,38 @@ function App() {
 
   return (
     <Container maxWidth='lg' sx={{ py: 4 }}>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' sx={{ mb: 4 }}>
         User Management
       </Typography>
 
-      <Button
-        variant='contained'
-        startIcon={<Add />}
-        onClick={() => setShowCreateModal(true)}
-        sx={{ mb: 3 }}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
       >
-        Create New User
-      </Button>
+        <OutlinedInput
+          id='user-search'
+          endAdornment={
+            <InputAdornment position='end'>
+              <PersonSearch />
+            </InputAdornment>
+          }
+          placeholder='search'
+          value={searchText}
+          onInput={(e) => setSearchText((e.target as HTMLInputElement).value)}
+          size='small'
+        />
+
+        <Button
+          variant='outlined'
+          startIcon={<Add />}
+          onClick={() => setShowCreateModal(true)}
+        >
+          Create New User
+        </Button>
+      </div>
 
       <UserTable
         users={sortedUsers}
@@ -60,6 +87,7 @@ function App() {
         sortField={sortField}
         sortOrder={sortOrder}
         onSort={handleSort}
+        searchText={searchText.toLowerCase()}
       />
 
       <CreateUserDialog

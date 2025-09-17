@@ -26,6 +26,7 @@ const mockProps = {
   sortField: 'firstname' as const,
   sortOrder: 'asc' as const,
   onSort: jest.fn(),
+  searchText: '',
 };
 
 describe('UserTable', () => {
@@ -45,6 +46,20 @@ describe('UserTable', () => {
     expect(screen.getByText('15/05/1985')).toBeInTheDocument();
 
     expect(screen.getAllByTestId('DeleteIcon').length).toEqual(2);
+  });
+
+  test('renders user data correctly with search', () => {
+    render(<UserTable {...{...mockProps, searchText: 'd'}} />);
+
+    expect(screen.getByText('John')).toBeInTheDocument();
+    expect(screen.getByText('Doe')).toBeInTheDocument();
+    expect(screen.getByText('01/01/1990')).toBeInTheDocument();
+
+    expect(screen.queryByText('Jane')).not.toBeInTheDocument();
+    expect(screen.queryByText('Smith')).not.toBeInTheDocument();
+    expect(screen.queryByText('15/05/1985')).not.toBeInTheDocument();
+
+    expect(screen.getAllByTestId('DeleteIcon').length).toEqual(1);
   });
 
   test('calls onDeleteUser when delete button is clicked', () => {
