@@ -1,9 +1,23 @@
-import eslint from '@eslint/js'
-import { defineConfig } from 'eslint/config'
-import tseslint from 'typescript-eslint'
+import stylistic from '@stylistic/eslint-plugin';
+import tseslint from 'typescript-eslint';
 
-export default defineConfig(
-  eslint.configs.recommended,
-  tseslint.configs.strict,
-  tseslint.configs.stylistic
-)
+export default [
+  {
+    plugins: {
+      '@stylistic': stylistic,
+    },
+    files: ['**/src/**/*.{js,ts,jsx,tsx}'],
+    rules: {
+      '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+      '@stylistic/max-len': ['error', 100],
+      '@stylistic/semi': ['error', 'always'],
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+];

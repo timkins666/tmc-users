@@ -1,19 +1,35 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, TableSortLabel } from '@mui/material'
-import { Delete } from '@mui/icons-material'
-import { type User } from '../types/user'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  TableSortLabel,
+} from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import { type User } from '../types/user';
 
-export type SortField = keyof User
-export type SortOrder = 'asc' | 'desc'
+export type SortField = keyof User;
+export type SortOrder = 'asc' | 'desc';
 
 interface UserTableProps {
-  users: User[]
-  onDeleteUser: (user: User) => void
-  sortField: SortField
-  sortOrder: SortOrder
-  onSort: (field: SortField) => void
+  users: User[];
+  onDeleteUser: (user: User) => void;
+  sortField: SortField;
+  sortOrder: SortOrder;
+  onSort: (field: SortField) => void;
 }
 
-export const UserTable = ({ users, onDeleteUser, sortField, sortOrder, onSort }: UserTableProps) => {
+export const UserTable = ({
+  users,
+  onDeleteUser,
+  sortField,
+  sortOrder,
+  onSort,
+}: UserTableProps) => {
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -59,7 +75,7 @@ export const UserTable = ({ users, onDeleteUser, sortField, sortOrder, onSort }:
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map(user => (
+          {users.map((user) => (
             <TableRow key={user.id} hover>
               <TableCell>{user.firstname}</TableCell>
               <TableCell>{user.lastname}</TableCell>
@@ -78,5 +94,5 @@ export const UserTable = ({ users, onDeleteUser, sortField, sortOrder, onSort }:
         </TableBody>
       </Table>
     </TableContainer>
-  )
-}
+  );
+};

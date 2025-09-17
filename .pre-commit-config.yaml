@@ -29,7 +29,9 @@ repos:
     name: ESLint
     entry: npx eslint
     language: system
-    args: [--config, ./frontend/eslint.config.js]
+    args: [--config, ./frontend/eslint.config.js, --fix]
+    exclude: .json|.yaml
+    require_serial: true
 - repo: https://github.com/shellcheck-py/shellcheck-py
   rev: v0.9.0.5
   hooks:

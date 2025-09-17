@@ -1,40 +1,40 @@
-import { useState, useEffect } from 'react'
-import type { User, UserBase } from '../types/user'
-import { userService } from '../services/userService'
+import { useState, useEffect } from 'react';
+import type { User, UserBase } from '../types/user';
+import { userService } from '../services/userService';
 
 export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<User[]>([]);
 
   const fetchUsers = async () => {
     try {
-      const data = await userService.getUsers()
-      setUsers(data)
+      const data = await userService.getUsers();
+      setUsers(data);
     } catch (error) {
-      console.error('Error fetching users:', error)
+      console.error('Error fetching users:', error);
     }
-  }
+  };
 
   const createUser = async (userData: UserBase) => {
     try {
-      await userService.createUser(userData)
-      fetchUsers()
+      await userService.createUser(userData);
+      fetchUsers();
     } catch (error) {
-      console.error('Error creating user:', error)
+      console.error('Error creating user:', error);
     }
-  }
+  };
 
   const deleteUser = async (id: string) => {
     try {
-      await userService.deleteUser(id)
-      fetchUsers()
+      await userService.deleteUser(id);
+      fetchUsers();
     } catch (error) {
-      console.error('Error deleting user:', error)
+      console.error('Error deleting user:', error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
-  return { users, createUser, deleteUser }
-}
+  return { users, createUser, deleteUser };
+};
