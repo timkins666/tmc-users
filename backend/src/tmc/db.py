@@ -11,15 +11,14 @@ from tmc.models.user import User
 
 _logger = logging.getLogger(__name__)
 
-DB_NAME = "tmc"
-
 
 def db_url():
-    """get postgres connection url with development defaults"""
+    """get postgres connection url with dev server defaults"""
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "postgresP")
-    port = os.getenv("POSTGRES_PORT", "5432")
-    return f"postgresql://{user}:{password}@localhost:{port}/{DB_NAME}"
+    host = os.getenv("POSTGRES_HOST", "localhost:5432")
+    db_name = os.getenv("POSTGRES_DB", "tmc")
+    return f"postgresql://{user}:{password}@{host}/{db_name}"
 
 
 engine = create_engine(db_url())
@@ -28,8 +27,12 @@ engine = create_engine(db_url())
 def init_db() -> None:
     """initialize database with configured tables"""
     _logger.info("initialising database and tables")
+
+    # wouldn't do this in real life obvs
     if os.getenv("REFRESH_DB") == "true":
+        _logger.warning("REFRESH_DB set - deleting all users")
         SQLModel.metadata.drop_all(engine)
+
     SQLModel.metadata.create_all(engine)
 
 

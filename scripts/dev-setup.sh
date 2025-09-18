@@ -5,11 +5,8 @@
 # - backend venv (replace)
 # - install frontend npm packages
 
-# other requirements:
-# - postgres must be installed on your system for psycopg2
-
-
 PROJECT_DIR=$(git rev-parse --show-toplevel)
+
 
 # PRE-COMMIT
 echo Replacing pre-commit venv
@@ -23,7 +20,7 @@ source "$PROJECT_DIR/.venv/bin/activate"
 pip install pre-commit
 
 
-# BACKEND - uses uv from root venv xxx
+# BACKEND - uses uv from root venv
 echo Replacing backend venv
 
 cd "$PROJECT_DIR/backend" || exit 1
@@ -36,6 +33,7 @@ source .venv/bin/activate
 
 pip install uv
 uv sync --all-groups
+
 
 # FRONTEND
 echo Installing frontend npm packages
