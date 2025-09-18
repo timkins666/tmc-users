@@ -9,34 +9,112 @@ const validData: NewUser = {
 
 describe('validateNewUser', () => {
   test('valid new user data', () => {
-    expect(validateNewUser(validData)).toBe(true);
+    const result = validateNewUser(validData);
+
+    expect(result.ok).toBe(true);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
   });
 
   test('empty firstname', () => {
-    expect(validateNewUser({ ...validData, firstname: '' })).toBe(false);
+    const result = validateNewUser({ ...validData, firstname: '' });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
   });
   test('empty lastname', () => {
-    expect(validateNewUser({ ...validData, lastname: '' })).toBe(false);
+    const result = validateNewUser({ ...validData, lastname: '' });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
   });
   test('bad chars firstname', () => {
-    expect(validateNewUser({ ...validData, firstname: 'B1lly' })).toBe(false);
+    const result = validateNewUser({ ...validData, firstname: 'B1lly' });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe('Invalid first name');
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
   });
   test('bad chars lastname', () => {
-    expect(validateNewUser({ ...validData, lastname: 'B_lly' })).toBe(false);
+    const result = validateNewUser({ ...validData, lastname: 'B_lly' });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe('Invalid last name');
+    expect(result.dateOfBirth).toBe(undefined);
   });
   test('dob oldest ok', () => {
-    expect(
-      validateNewUser({ ...validData, dateOfBirth: dayjs('1900-01-01') })
-    ).toBe(true);
+    const result = validateNewUser({
+      ...validData,
+      dateOfBirth: dayjs('1900-01-01'),
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
   });
   test('dob to old', () => {
-    expect(
-      validateNewUser({ ...validData, dateOfBirth: dayjs('1899-12-31') })
-    ).toBe(false);
+    const result = validateNewUser({
+      ...validData,
+      dateOfBirth: dayjs('1899-12-31'),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe('Invalid date');
   });
   test('dob too young', () => {
-    expect(
-      validateNewUser({ ...validData, dateOfBirth: dayjs().subtract(1, 'day') })
-    ).toBe(false);
+    const result = validateNewUser({
+      ...validData,
+      dateOfBirth: dayjs().subtract(1, 'day'),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe('Invalid date');
+  });
+  test('dob unset', () => {
+    const result = validateNewUser({
+      ...validData,
+      dateOfBirth: null,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
+  });
+  test('all bad', () => {
+    const result = validateNewUser({
+      firstname: '3',
+      lastname: '_',
+      dateOfBirth: dayjs(),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe('Invalid first name');
+    expect(result.lastname).toBe('Invalid last name');
+    expect(result.dateOfBirth).toBe('Invalid date');
+  });
+  test('all unset', () => {
+    const result = validateNewUser({
+      firstname: '',
+      lastname: '',
+      dateOfBirth: null,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.firstname).toBe(undefined);
+    expect(result.lastname).toBe(undefined);
+    expect(result.dateOfBirth).toBe(undefined);
   });
 });

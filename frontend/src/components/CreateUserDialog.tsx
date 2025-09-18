@@ -8,7 +8,11 @@ import {
   Button,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { type NewUser, validateNewUser } from '../types/user';
+import {
+  type NewUser,
+  type UserValidation,
+  validateNewUser,
+} from '../types/user';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -31,16 +35,16 @@ export const CreateUserDialog = ({
     dateOfBirth: null,
   });
 
-  const [dateError, setDateError] = useState<string | null>('');
+  const [userValidation, setUserValidation] = useState<UserValidation>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateNewUser(formData)) {
+    if (!userValidation.ok) {
       return;
     }
 
-    if (!await onCreateUser(formData)) {
+    if (!(await onCreateUser(formData))) {
       return; // invalid or failed request
     }
     setFormData({ firstname: '', lastname: '', dateOfBirth: null });
@@ -56,9 +60,12 @@ export const CreateUserDialog = ({
             fullWidth
             label='First name'
             value={formData.firstname}
-            onChange={(e) =>
-              setFormData({ ...formData, firstname: e.target.value })
-            }
+            onChange={(e) => {
+              const newData = { ...formData, firstname: e.target.value };
+              setFormData(newData);
+              setUserValidation(validateNewUser(newData));
+            }}
+            helperText={userValidation.firstname || ' '}
             required
             sx={{ mb: 2 }}
             slotProps={{ inputLabel: { shrink: true } }}
@@ -67,9 +74,12 @@ export const CreateUserDialog = ({
             fullWidth
             label='Last name'
             value={formData.lastname}
-            onChange={(e) =>
-              setFormData({ ...formData, lastname: e.target.value })
-            }
+            onChange={(e) => {
+              const newData = { ...formData, lastname: e.target.value };
+              setFormData(newData);
+              setUserValidation(validateNewUser(newData));
+            }}
+            helperText={userValidation.lastname || ' '}
             required
             sx={{ mb: 2 }}
             slotProps={{ inputLabel: { shrink: true } }}
@@ -81,20 +91,17 @@ export const CreateUserDialog = ({
               format='DD/MM/YYYY'
               value={formData.dateOfBirth}
               maxDate={dayjs().subtract(MIN_USER_AGE, 'year')}
-              onChange={(newValue) =>
-                setFormData({ ...formData, dateOfBirth: newValue })
-              }
-              onError={(newError) =>
-                setDateError(
-                  newError === 'maxDate' ? `Users must be over ${MIN_USER_AGE}` : ''
-                )
-              }
+              onChange={(newValue) => {
+                const newData = { ...formData, dateOfBirth: newValue };
+                setFormData(newData);
+                setUserValidation(validateNewUser(newData));
+              }}
               slotProps={{
                 textField: {
                   required: true,
                   error: false,
                   InputLabelProps: { shrink: true },
-                  helperText: dateError,
+                  helperText: userValidation.dateOfBirth || ' ',
                 },
               }}
             />
@@ -102,7 +109,11 @@ export const CreateUserDialog = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button type='submit' variant='contained' disabled={!validateNewUser(formData)}>
+          <Button
+            type='submit'
+            variant='contained'
+            disabled={!validateNewUser(formData).ok}
+          >
             Create
           </Button>
         </DialogActions>

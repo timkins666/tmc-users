@@ -16,26 +16,33 @@ export interface User extends UserBase {
   age: number;
 }
 
-export const validateNewUser = (userData: NewUser): boolean => {
-  if (!userData.firstname || !userData.lastname) {
-    return false;
+export interface UserValidation {
+  ok?: boolean;
+  firstname?: string;
+  lastname?: string;
+  dateOfBirth?: string;
+}
+
+export const validateNewUser = (userData: NewUser): UserValidation => {
+  const name_validator = /^[A-Za-zÀ-ÖØ-öø-ÿ- ]{1,100}$/;
+  const results: UserValidation = { ok: true };
+
+  if (!userData.firstname.match(name_validator)) {
+    results.ok = false;
+    results.firstname = userData.firstname ? 'Invalid first name' : undefined;
   }
-  const allowed_chars = /^[A-Za-zÀ-ÖØ-öø-ÿ- ]+$/;
-  if (
-    !userData.firstname.match(allowed_chars) ||
-    !userData.lastname.match(allowed_chars)
-  ) {
-    return false;
+  if (!userData.lastname.match(name_validator)) {
+    results.ok = false;
+    results.lastname = userData.lastname ? 'Invalid last name' : undefined;
   }
   if (
     !userData.dateOfBirth ||
-    dayjs().diff(userData.dateOfBirth, 'year') < MIN_USER_AGE
+    dayjs().diff(userData.dateOfBirth, 'year') < MIN_USER_AGE ||
+    userData.dateOfBirth.isBefore(dayjs('1900-01-01'))
   ) {
-    return false;
-  }
-  if (userData.dateOfBirth.isBefore(dayjs('1900-01-01'))) {
-    return false;
+    results.ok = false;
+    results.dateOfBirth = userData.dateOfBirth ? 'Invalid date' : undefined;
   }
 
-  return true;
+  return results;
 };

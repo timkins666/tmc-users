@@ -20,6 +20,42 @@ describe('CreateUserDialog', () => {
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
     expect(screen.getAllByLabelText(/date of birth/i)[0]).toBeInTheDocument();
+
+    expect(screen.getByText('Create')).toBeDisabled();
+  });
+
+  test('valid input enables the button', async () => {
+    const user = userEvent.setup();
+    render(<CreateUserDialog {...mockProps} />);
+
+    expect(screen.getByText('Create')).toBeDisabled();
+
+    await user.type(screen.getByLabelText(/first name/i), 'John');
+    await user.type(screen.getByLabelText(/last name/i), 'Doe');
+    await user.type(
+      screen.getAllByLabelText(/date of birth/i)[0],
+      '01/02/1993'
+    );
+
+    expect(screen.getByText('Create')).not.toBeDisabled();
+  });
+
+  test('invalid input displays error messages', async () => {
+    const user = userEvent.setup();
+    render(<CreateUserDialog {...mockProps} />);
+
+    await user.type(screen.getByLabelText(/first name/i), 'Jo3hn');
+    await user.type(screen.getByLabelText(/last name/i), 'Do4e');
+    await user.type(
+      screen.getAllByLabelText(/date of birth/i)[0],
+      '01/02/1851'
+    );
+
+    expect(screen.getByText('Create')).toBeDisabled();
+
+    expect(screen.getByText('Invalid first name')).toBeInTheDocument();
+    expect(screen.getByText('Invalid last name')).toBeInTheDocument();
+    expect(screen.getByText('Invalid date')).toBeInTheDocument();
   });
 
   test('calls onCreateUser with form data on submit', async () => {
@@ -28,7 +64,10 @@ describe('CreateUserDialog', () => {
 
     await user.type(screen.getByLabelText(/first name/i), 'John');
     await user.type(screen.getByLabelText(/last name/i), 'Doe');
-    await user.type(screen.getAllByLabelText(/date of birth/i)[0], '01/02/1993');
+    await user.type(
+      screen.getAllByLabelText(/date of birth/i)[0],
+      '01/02/1993'
+    );
 
     fireEvent.click(screen.getByText('Create'));
 
