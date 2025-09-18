@@ -92,7 +92,7 @@ class TestUsersRouter:
             "/users/create", json={"user": self.new_user_data(dateOfBirth=dob)}
         )
 
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_create_user_fail_if_id_in_request(self, app: TestClient):
         """test create a user"""
@@ -104,7 +104,7 @@ class TestUsersRouter:
 
         response = app.post("/users/create", json={"user": user_data})
 
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
         assert "extra_forbidden" in response.text
         assert user_data["id"] in response.text
@@ -132,7 +132,7 @@ class TestUsersRouter:
 
         response = app.delete("/user/123")
 
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_delete_user_unknown_id(self, app: TestClient):
         """test delete a non-existent user"""

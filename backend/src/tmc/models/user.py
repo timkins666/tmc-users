@@ -1,6 +1,7 @@
 """user model classes"""
 
 from datetime import datetime, date
+import re
 import uuid
 from fastapi import HTTPException, status
 from humps import camel
@@ -8,17 +9,27 @@ from sqlmodel import Field, SQLModel
 from pydantic import field_validator
 
 
+NAME_ALLOWED_CHARS = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ- ]+$")
+
+
 class UserBase(SQLModel):
     """common properties"""
 
-    class Config:
-        """Pydantic config"""
+    model_config = {
+        "alias_generator": camel.case,
+        "validate_by_name": True,
+        "str_strip_whitespace": True,
+        "extra": "forbid",
+    }
 
-        alias_generator = camel.case
-        validate_by_name = True
-
-    firstname: str = Field(min_length=1, max_length=100)
-    lastname: str = Field(min_length=1, max_length=100)
+    firstname: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+    lastname: str = Field(
+        min_length=1,
+        max_length=100,
+    )
     date_of_birth: date = Field(alias="dateOfBirth")
 
 
@@ -26,22 +37,6 @@ class UserCreate(
     UserBase,
 ):
     """fields required to create a new user"""
-
-    model_config = {"extra": "forbid"}
-
-
-class UserPublic(UserBase):
-    """user data returned to client"""
-
-    id: uuid.UUID
-
-
-class User(UserBase, table=True):
-    """full User entity"""
-
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now, primary_key=True)
-    deleted: bool = Field(default=False)
 
     @field_validator("date_of_birth")
     @classmethod
@@ -57,12 +52,39 @@ class User(UserBase, table=True):
 
         if v > max_date:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"User must be at least {min_age} years old",
             )
         if v < date(1900, 1, 1):
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="User must be born on or after 01/01/1900",
             )
         return v
+
+    @field_validator("firstname", "lastname")
+    @classmethod
+    def _validate_name(cls, v) -> bool:
+        """
+        Ensure name fields only contain valid characters.
+        """
+        if not NAME_ALLOWED_CHARS.match(v):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Name must only contain letters, spaces and hyphens",
+            )
+        return v
+
+
+class UserPublic(UserBase):
+    """user data returned to client"""
+
+    id: uuid.UUID
+
+
+class User(UserBase, table=True):
+    """full User entity"""
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now, primary_key=True)
+    deleted: bool = Field(default=False)

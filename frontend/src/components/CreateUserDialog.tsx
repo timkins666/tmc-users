@@ -102,7 +102,7 @@ export const CreateUserDialog = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button type='submit' variant='contained'>
+          <Button type='submit' variant='contained' disabled={!validateNewUser(formData)}>
             Create
           </Button>
         </DialogActions>

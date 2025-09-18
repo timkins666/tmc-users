@@ -9,6 +9,9 @@ global.fetch = jest.fn();
 describe('userService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
     MockDate.reset();
   });
 

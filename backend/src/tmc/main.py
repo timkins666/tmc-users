@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from tmc import db
-from .routers import users
+from tmc.routers import users
 
 
 @asynccontextmanager
@@ -24,7 +24,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["OPTIONS", "GET", "POST", "DELETE"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
 )
 

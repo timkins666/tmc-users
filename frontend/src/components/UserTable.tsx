@@ -39,7 +39,7 @@ export const UserTable = ({
       component={Paper}
       sx={{ mt: 2, mb: 2, maxHeight: 'calc(100vh - 350px)' }}
     >
-      <Table>
+      <Table stickyHeader>
         <TableHead>
           <TableRow>
             <TableCell>
@@ -78,17 +78,28 @@ export const UserTable = ({
                 Age
               </TableSortLabel>
             </TableCell>
-            <TableCell></TableCell>
+            <TableCell sx={{ width: 30 }}></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {users
-            .filter(
+          {(() => {
+            const filteredUsers = users.filter(
               (user) =>
                 user.firstname.toLowerCase().includes(searchText) ||
                 user.lastname.toLowerCase().includes(searchText)
-            )
-            .map((user) => (
+            );
+
+            if (filteredUsers.length === 0) {
+              return (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                    No users found
+                  </TableCell>
+                </TableRow>
+              );
+            }
+
+            return filteredUsers.map((user) => (
               <TableRow
                 key={user.id}
                 hover
@@ -111,7 +122,7 @@ export const UserTable = ({
                     ''
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: 30 }}>
                   <IconButton
                     className='delete-icon'
                     onClick={() => onDeleteUser(user)}
@@ -121,7 +132,8 @@ export const UserTable = ({
                   </IconButton>
                 </TableCell>
               </TableRow>
-            ))}
+            ));
+          })()}
         </TableBody>
       </Table>
     </TableContainer>

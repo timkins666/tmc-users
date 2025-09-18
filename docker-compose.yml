@@ -27,7 +27,7 @@ services:
       POSTGRES_PASSWORD: postgresP
       POSTGRES_DB: tmc
       POSTGRES_HOST: postgres:5432
-      # REFRESH_DB: true
+      # REFRESH_DB: true # uncomment to delete all users on startup
   frontend:
     depends_on:
     - backend
@@ -36,10 +36,11 @@ services:
     ports:
     - 5173:5173
     volumes:
-    - ./app:/frontend
-    - /frontend/node_modules
+    - ./frontend:/app
+    - /app/node_modules
     environment:
       NODE_ENV: development
+      CHOKIDAR_USEPOLLING: true # enable hot reload for devving
 
 volumes:
   postgres_data:
