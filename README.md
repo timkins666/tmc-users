@@ -17,6 +17,12 @@ It uses [uv](https://docs.astral.sh/uv/) for package management because it is gr
 
 Spool it up then see http://localhost:8000/docs for API details.
 
+Model validation imposes certain criteria when creating users:
+- users must be at least 16 years old and born on or after 01/01/1990.
+- `firstname` and `lastname` must be between 1 and 100 chars long, and can only contain letters, hypens and spaces.
+
+Deleting a user is a soft delete operation so as not to break relationships if more tables are added.
+
 #### Frontend
 
 React frontend powered by Vite running on `localhost:5173`.
@@ -32,7 +38,7 @@ Once everything is installed you can run the frontend and backend directly (with
 - start the postgres container with `docker-compose up -d postgres` from the project root
 - if you don't already have `uv` installed on your system you'll need to activate the backend venv with `source ./backend/.venv/bin/activate`
 - with `backend` as your working directory, start the backend with `uv run fastapi dev src/tmc/main.py`
-- in a new terminal with the `frontend` as your working directory, run `npm run dev`
+- in a new terminal with `frontend` as your working directory, run `npm run dev`
 
 ### Unit tests
 
@@ -40,8 +46,8 @@ Once everything is installed you can run the frontend and backend directly (with
 
 The backend tests use Pytest and an in-memory SQLite database to not interfere with users you've created in Postgres.
 
-Run `uv run pytest` from `backend`.
+Run `uv run pytest` from `/backend`.
 
 #### Frontend
 
-The frontend tests use Jest, simply run `npm test` from `frontend`.
+The frontend tests use Jest, simply run `npm test` from `/frontend`.
