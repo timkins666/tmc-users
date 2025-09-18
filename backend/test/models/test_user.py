@@ -3,6 +3,7 @@
 from contextlib import nullcontext
 from datetime import date
 from unittest import mock
+from pydantic import ValidationError
 import pytest
 from fastapi import HTTPException
 
@@ -93,6 +94,25 @@ class TestUserCreate:
         """validate with valid names"""
 
         with pytest.raises(HTTPException, match="must only contain"):
+            _ = sut.UserCreate(
+                firstname=firstname, lastname=lastname, dateOfBirth=date(2000, 1, 1)
+            )
+
+    @pytest.mark.parametrize(
+        "firstname, lastname, error",
+        [
+            (None, "y", "should be a valid string"),
+            ("x", None, "should be a valid string"),
+            ("", "y", "string_too_short"),
+            ("x", "", "string_too_short"),
+            ("x" * 101, "y", "string_too_long"),
+            ("x", "y" * 101, "string_too_long"),
+        ],
+    )
+    def test_validate_names_error(self, firstname: str, lastname: str, error: str):
+        """validate with valid names"""
+
+        with pytest.raises(ValidationError, match=error):
             _ = sut.UserCreate(
                 firstname=firstname, lastname=lastname, dateOfBirth=date(2000, 1, 1)
             )

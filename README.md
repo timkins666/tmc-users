@@ -11,7 +11,7 @@ Run `docker-compose up -d` from the project root to start all containers, then h
 
 #### Backend
 
-A FastAPI web server running on `localhost:8000` providing a basic API for getting, creating and (soft) deleting users.
+FastAPI web server running on `localhost:8000` providing a basic API for getting, creating and deleting users.
 
 It uses [uv](https://docs.astral.sh/uv/) for package management because it is great.
 
@@ -32,11 +32,14 @@ React frontend powered by Vite running on `localhost:5173`.
 Containerised postgres database running on `localhost:5432`.
 
 ## Local/dev setup
-Run the handy script at `scripts/dev-setup.sh` to set up local venv for the backend. It also sets up some slightly clunky pre-commit hooks; they're not everyone's cup of tea but I like them.
+
+(For Mac/Linux, if you're on Windows you'll have to adapt as necessary)
+
+Run the handy script at `scripts/dev-setup.sh` to install frontend packages and set up the venv for the backend. It also sets up some slightly clunky pre-commit hooks; they're not everyone's cup of tea but I like them.
 
 Once everything is installed you can run the frontend and backend directly (without using Docker):
-- start the postgres container with `docker-compose up -d postgres` from the project root
-- if you don't already have `uv` installed on your system you'll need to activate the backend venv with `source ./backend/.venv/bin/activate`
+- start the postgres container with `docker-compose up -d postgres` from the project root so the backend has something to talk to
+- if you don't already have `uv` installed globally on your system you'll need to activate the backend venv with `source ./backend/.venv/bin/activate`
 - with `backend` as your working directory, start the backend with `uv run fastapi dev src/tmc/main.py`
 - in a new terminal with `frontend` as your working directory, run `npm run dev`
 
